@@ -1,0 +1,88 @@
+﻿@page "/tratamientos"
+@inject IJSRuntime js
+@inject IRepositorio repositorio
+@inject IStringLocalizer<Resource> localizer
+@*@attribute [Authorize(Policy = "User")]*@
+
+<h3>@localizer["tratamientos.titulo"]</h3>
+
+<div class="form-group">
+    <a class="btn btn-info" href="tratamientos/crear">@localizer["Create"]</a>
+</div>
+
+<div>
+    <h4>@localizer["tratamientos.grilla"]</h4>
+
+    @if (tratamientos == null)
+    {
+        <img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" />
+        <text>Cargando...</text>
+    }
+    else if (tratamientos.Count == 0)
+    {
+        <text>No hay registros para mostrar</text>
+    }
+    else
+    {
+        <SfGrid DataSource="tratamientos">
+            <GridColumns>
+                <GridColumn Field="@nameof(Tratamiento.IdTratamiento)"
+                            HeaderText="Id Trat."
+                            TextAlign="TextAlign.Right"
+                            Width="120">
+                </GridColumn>
+                <GridColumn Field="@nameof(Tratamiento.Nombre)"
+                            HeaderText="Nombre del tratamiento"
+                            TextAlign="TextAlign.Right"
+                            Width="130">
+                </GridColumn>
+                <GridColumn Field="@nameof(Tratamiento.Descripcion)"
+                            HeaderText="Descripción"
+                            TextAlign="TextAlign.Right"
+                            Width="150">
+                </GridColumn>
+                <GridColumn Field="@nameof(Tratamiento.Indicaciones)"
+                            HeaderText="Indicaciones"
+                            TextAlign="TextAlign.Right"
+                            Width="150">
+                </GridColumn>
+                <GridColumn Field="@nameof(Tratamiento.Fecha)"
+                            HeaderText="Creado el"
+                            TextAlign="TextAlign.Right"
+                            Format="d"
+                            Type="ColumnType.Date"
+                            Width="130">
+                </GridColumn>
+            </GridColumns>
+        </SfGrid>
+    }
+
+</div>
+
+@code {
+
+    private List<Tratamiento> tratamientos = new List<Tratamiento>();
+
+    protected async override Task OnInitializedAsync()
+    {
+        try
+        {
+            var httpResponse = await repositorio.Get<List<Tratamiento>>("https://localhost:44355/api/Tratamiento");
+            tratamientos = httpResponse.Response;
+
+            if (httpResponse.Error)
+            {
+                var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+                //Mensaje al usuario
+                await js.InvokeVoidAsync("alert", $"ERROR: " + body);
+            }
+
+        }
+        catch (Exception ex)
+        {
+            //Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"ERROR: " + ex.Message);
+        }
+
+    }
+}

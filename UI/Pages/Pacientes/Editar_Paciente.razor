@@ -1,0 +1,108 @@
+﻿@page "/pacientes/editar/{IdPaciente:int}"
+@inject IJSRuntime js
+@inject IRepositorio repositorio
+@inject NavigationManager navigationManager
+@inject IStringLocalizer<Resource> localizer
+@attribute [Authorize(Policy = "User")]
+
+<h3>@localizer["pacientes.editar.titulo"]</h3>
+
+@if (paciente == null)
+{
+    <text>Cargando...</text>
+}
+else
+{
+    <EditForm Model="paciente" OnValidSubmit="Editar">
+        <DataAnnotationsValidator />
+        <div class="form-group">
+            <label>@localizer["Name"]</label>
+            <div>
+                <InputText class="form-control" @bind-Value="@paciente.Nombre" />
+            </div>
+            <label>@localizer["Surname"]</label>
+            <div>
+                <InputText class="form-control" @bind-Value="@paciente.Apellido" />
+            </div>
+            <label>@localizer["National ID"]</label>
+            <div>
+                <InputText class="form-control" @bind-Value="@paciente.Documento" />
+            </div>
+            <label>@localizer["Address"]</label>
+            <div>
+                <InputText class="form-control" @bind-Value="@paciente.Domicilio" />
+            </div>
+            <label>@localizer["Phone"]</label>
+            <div>
+                <InputText class="form-control" @bind-Value="@paciente.Telefono" />
+            </div>
+            <label>@localizer["Email"]</label>
+            <div>
+                <InputText class="form-control" @bind-Value="@paciente.Email" />
+            </div>
+            <label>@localizer["Gender"]</label>
+            <div>
+                <InputSelect class="form-control" @bind-Value="@paciente.Genero">
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
+                    <option value="Otro">Otro</option>
+                </InputSelect>
+            </div>
+            <label>@localizer["Dato of birth"]</label>
+            <div>
+                <InputDate class="form-control" @bind-Value="@paciente.FechaNacimiento" />
+            </div>
+        </div>
+
+        <button class="btn btn-success" type="submit">Guardar Cambios</button>
+        <a class="btn btn-danger" href="pacientes">@localizer["Cancel"]</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int IdPaciente { get; set; }
+    private Paciente paciente = new Paciente();
+
+    protected async override Task OnInitializedAsync()
+    {
+        var httpResponse = await repositorio.Get<Paciente>($"/api/Paciente/{IdPaciente}");
+        if (httpResponse.Error)
+        {
+            if (httpResponse.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("pacientes");
+            }
+            else
+            {
+                var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+                // Mensaje al usuario
+                await js.InvokeVoidAsync("alert", $"ERROR: {body}");
+            }
+        }
+        else
+        {
+            paciente = httpResponse.Response;
+        }
+    }
+
+    private async Task Editar()
+    {
+        //await repositorio.Put<EnsayoClinico>("/api/EnsayoClinico", ensayoClinico);
+        //navigationManager.NavigateTo("ensayosclinicos");
+
+        var httpResponse = await repositorio.Put<Paciente>("/api/Paciente", paciente);
+        if (httpResponse.Error)
+        {
+            var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+            // Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"ERROR: {body}");
+        }
+        else
+        {
+            // Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"Editado correctamente");
+            navigationManager.NavigateTo("pacientes");
+        }
+    }
+
+}

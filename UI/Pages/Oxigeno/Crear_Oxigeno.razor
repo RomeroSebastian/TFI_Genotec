@@ -1,0 +1,101 @@
+﻿@page "/pacientes/oxigeno/crear/{IdPaciente:int}"
+@inject IJSRuntime js
+@inject IRepositorio repositorio
+@inject NavigationManager navigationManager
+@inject IStringLocalizer<Resource> localizer
+@attribute [Authorize(Policy = "User")]
+
+<h3>Crear Registro de Saturación de oxígeno para el paciente: @paciente.Nombre @paciente.Apellido</h3>
+
+@if (oxigeno == null)
+{
+    <text>Cargando...</text>
+}
+else
+{
+    <EditForm Model="oxigeno" OnValidSubmit="Crear">
+        <div class="form-group">
+            <label>@localizer["Value"]</label>
+            <div>
+                <InputNumber class="form-control" @bind-Value="@oxigeno.Valor" />
+            </div>
+            <label>@localizer["Unit"]</label>
+            <div>
+                <InputText class="form-control" @bind-Value="@oxigeno.Unidad" />
+            </div>
+            <label>@localizer["Date"]</label>
+            <div>
+                <SfDateTimePicker TValue="DateTime?" @bind-Value="@dateValue"></SfDateTimePicker>
+            </div>
+        </div>
+
+        <button class="btn btn-success" type="submit">@localizer["Create"]</button>
+        <a class="btn btn-danger" href="pacientes/oxigeno/@oxigeno.IdPaciente">@localizer["Cancel"]</a>
+    </EditForm>
+}
+
+
+@code {
+
+    [Parameter] public int IdPaciente { get; set; }
+    private Oxigeno oxigeno = new Oxigeno();
+    private Paciente paciente = new Paciente();
+    private DateTime? dateValue { get; set; } = DateTime.Now;
+
+    protected async override Task OnInitializedAsync()
+    {
+        // API Paciente - GET con datos del paciente
+        var httpResponse = await repositorio.Get<Paciente>($"/api/Paciente/{IdPaciente}");
+
+        // Capturo respuesta de error del mensaje http
+        if (httpResponse.Error)
+        {
+            var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+            // Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"ERROR: " + body);
+
+            // Dirijo al usuario a otra página
+            navigationManager.NavigateTo($"/pacientes/oxigeno/{IdPaciente}");
+        }
+        else
+        {
+            // Cargo el objeto Paciente dentro del Objeto Oxígeno
+            paciente = httpResponse.Response;
+            oxigeno.Paciente = paciente;
+            // Agrego el IdPaciente al objeto Oxígeno
+            oxigeno.IdPaciente = oxigeno.Paciente.IdPaciente;
+            // Seteo Unidad por defecto
+            oxigeno.Unidad = "SPO2";
+        }
+
+    }
+
+    /// <summary>
+    /// Crear nuevo registro de oxígeno para el paciente
+    /// </summary>
+    /// <returns></returns>
+    private async Task Crear()
+    {
+        // Fecha y Hora seleccionada
+        oxigeno.Fecha = Convert.ToDateTime(dateValue);
+
+        // API de Oxigeno - POST
+        var httpResponse = await repositorio.Post<Oxigeno>($"/api/Oxigeno", oxigeno);
+
+        // Capturo respuesta de error del mensaje http
+        if (httpResponse.Error)
+        {
+            var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+            // Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"ERROR: " + body);
+        }
+        else
+        {
+            // Mensaje al usuario
+            await js.InvokeVoidAsync("alert", "Se creó un nuevo registro de Oxígeno");
+
+            // Dirijo al usuario a otra página
+            navigationManager.NavigateTo($"/pacientes/oxigeno/{IdPaciente}");
+        }
+    }
+}

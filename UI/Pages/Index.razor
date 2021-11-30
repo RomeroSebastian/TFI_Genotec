@@ -1,0 +1,79 @@
+﻿@page "/"
+@inject IJSRuntime js
+@inject AuthenticationStateProvider AuthState
+@inject IStringLocalizer<Resource> localizer
+@attribute [Authorize]
+
+<h1>@localizer["index.welcome"], @_Username!</h1>
+<br />
+<img src="@_Picture">
+
+<AuthorizeView Policy="Admin">
+    <Authorized>
+        <br />
+        Permisos: @_Permission
+        <br />
+        <h4>Fecha ejemplo: @DateTime.Now</h4>
+        <h4>Monto ejemplo: @_precio.ToString("C")</h4>
+        <br />
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Claims asociados al usuario actual desde Auth0</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>
+                                Claim
+                            </th>
+                            <th>
+                                Valor
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var claim in @context.User.Claims)
+                        {
+                            <tr>
+                                <td>@claim.Type</td>
+                                <td>@claim.Value</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private string _Username = "Anonymous User";
+    private string _Picture = "";
+    private string _Permission = "";
+    //private List<string> listPermissions = new List<string>();
+    private decimal _precio = 123456.78m;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthState.GetAuthenticationStateAsync();
+
+        _Username = state.User.Claims
+                    .Where(c => c.Type.Equals("name"))
+                    .Select(c => c.Value)
+                    .FirstOrDefault() ?? string.Empty;
+
+        _Picture = state.User.Claims
+                    .Where(c => c.Type.Equals("picture"))
+                    .Select(c => c.Value)
+                    .FirstOrDefault() ?? string.Empty;
+
+        _Permission = state.User.Claims
+                .Where(c => c.Type.Equals("permissions"))
+                .Select(c => c.Value)
+                .FirstOrDefault() ?? string.Empty;
+
+        await base.OnInitializedAsync();
+    }
+}

@@ -1,0 +1,79 @@
+﻿@page "/tratamientos/editar/{TreatmentId:int}"
+@inject IJSRuntime js
+@inject IRepositorio repositorio
+@inject NavigationManager navigationManager
+@inject IStringLocalizer<Resource> localizer
+@*@attribute [Authorize(Policy = "User")]*@
+
+<h3>Editar Tratamiento</h3>
+
+@if (tratamiento == null)
+{
+    <text>Cargando...</text>
+}
+else
+{
+<EditForm Model="tratamiento" OnValidSubmit="Editar">
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <label>Nombre:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@tratamiento.Nombre" />
+            <ValidationMessage For="@(() => tratamiento.Nombre)" />
+        </div>
+        <label>Descripcion:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@tratamiento.Descripcion" />
+            <ValidationMessage For="@(() => tratamiento.Descripcion)" />
+        </div>
+        <label>Indicaciones:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@tratamiento.Indicaciones" />
+            <ValidationMessage For="@(() => tratamiento.Indicaciones)" />
+        </div>
+        <label>Fecha:</label>
+        <div>
+            <InputDate class="form-control" @bind-Value="@tratamiento.Fecha" />
+        </div>
+    </div>
+
+    <button class="btn btn-success" type="submit">Guardar Cambios</button>
+    <a class="btn btn-danger" href="tratamientos">@localizer["Cancel"]</a>
+</EditForm>
+}
+
+
+@code {
+
+    [Parameter] public int TreatmentId { get; set; }
+    private Tratamiento tratamiento = new Tratamiento();
+
+    protected async override Task OnInitializedAsync()
+    {
+        var httpResponse = await repositorio.Get<Tratamiento>($"https://localhost:44355/api/Tratamiento/{TreatmentId}");
+        if (httpResponse.Error)
+        {
+            if (httpResponse.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("tratamientos");
+            }
+            else
+            {
+                var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+                // Mensaje al usuario
+                await js.InvokeVoidAsync("alert", $"ERROR: {body}");
+            }
+        }
+        else
+        {
+            tratamiento = httpResponse.Response;
+        }
+    }
+
+    private async Task Editar()
+    {
+        await repositorio.Put<Tratamiento>("https://localhost:44355/api/Tratamiento/" + TreatmentId, tratamiento);
+        navigationManager.NavigateTo("tratamientos");
+    }
+
+}

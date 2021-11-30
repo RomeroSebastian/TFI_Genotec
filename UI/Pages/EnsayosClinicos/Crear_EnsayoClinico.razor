@@ -1,0 +1,164 @@
+﻿@page "/ensayosclinicos/crear"
+@inject IJSRuntime js
+@inject IRepositorio repositorio
+@inject NavigationManager navigationManager
+@inject IStringLocalizer<Resource> localizer
+@attribute [Authorize(Policy = "User")]
+
+<h3>@localizer["ensayo.crear.titulo"]</h3>
+
+<EditForm Model="ensayoClinico" OnSubmit="Crear">
+    <div class="form-group">
+        <label>@localizer["SISA code"]</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@ensayoClinico.CodigoSISA" />
+        </div>
+        <label>@localizer["Title"]</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@ensayoClinico.Titulo" />
+        </div>
+        <label>@localizer["Health condition"]</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@ensayoClinico.CondicionSalud" />
+        </div>
+        <label>@localizer["Category"]</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@ensayoClinico.Categoria" />
+        </div>
+        <label>@localizer["Type"]</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@ensayoClinico.Tipo" />
+        </div>
+        <label>@localizer["Phase"]</label>
+        <div>
+            <InputSelect class="form-control" @bind-Value="@_fase">
+                <option value="Fase 1">Fase 1</option>
+                <option value="Fase 2">Fase 2</option>
+                <option value="Fase 3">Fase 3</option>
+            </InputSelect>
+        </div>
+        <label>@localizer["Register date"]</label>
+        <div>
+            <InputDate class="form-control" @bind-Value="@ensayoClinico.FechaRegistro" />
+        </div>
+        <label>@localizer["Start date"]</label>
+        <div>
+            <InputDate class="form-control" @bind-Value="@ensayoClinico.FechaInicio" />
+        </div>
+        <label>@localizer["End date"]</label>
+        <div>
+            <InputDate class="form-control" @bind-Value="@ensayoClinico.FechaFin" />
+        </div>
+        <label>@localizer["Status"]</label>
+        <div>
+            <InputSelect class="form-control" @bind-Value="@_estado">
+                <option value="No iniciado aún">No iniciado aún</option>
+                <option value="Activo no incorporando">Activo no incorporando</option>
+                <option value="Activo incorporando pacientes">Activo incorporando pacientes</option>
+                <option value="Finalizado">Finalizado</option>
+            </InputSelect>
+        </div>
+    </div>
+
+    <button class="btn btn-success" type="submit">@localizer["Create"]</button>
+    <a class="btn btn-danger" href="ensayosclinicos">@localizer["Cancel"]</a>
+</EditForm>
+
+
+@code {
+
+    private EnsayoClinico ensayoClinico = new EnsayoClinico();
+    private Tratamiento tratamiento = new Tratamiento();
+    private List<Tratamiento> tratamientos = new List<Tratamiento>();
+    private int _selected = 1;
+    private string _estado;
+    private string _fase;
+
+    protected async override Task OnInitializedAsync()
+    {
+
+        try
+        {
+            // Lista de tratamientos
+            var httpResponse = await repositorio.Get<List<Tratamiento>>("/api/Tratamiento");
+            tratamientos = httpResponse.Response;
+
+            if (httpResponse.Error)
+            {
+                var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+                //Mensaje al usuario
+                await js.InvokeVoidAsync("alert", $"ERROR: " + body);
+            }
+
+        }
+        catch (Exception ex)
+        {
+
+            //Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"ERROR: " + ex.Message);
+        }
+
+    }
+
+    private async Task Crear()
+    {
+        try
+        {
+            // Tratamiento seleccionado
+            //tratamiento = GetTratamiento(_selected);
+
+
+            //// Agrego el tratamiento dentro del objeto ensayo clinico
+            //if (tratamiento != null)
+            //{
+            //    ensayoClinico.tratamiento = tratamiento;
+            //}
+
+            // Fase y Estado seleccionado
+            ensayoClinico.Fase = _fase;
+            ensayoClinico.Estado = _estado;
+
+            // API ensayo clinico
+            var httpResponse = await repositorio.Post("/api/EnsayoClinico", ensayoClinico);
+
+            // Capturo respuesta de error del mensaje http
+            if (httpResponse.Error)
+            {
+                var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+                // Mensaje al usuario
+                await js.InvokeVoidAsync("alert", $"ERROR: " + body);
+            }
+            else
+            {
+                // Mensaje al usuario
+                await js.InvokeVoidAsync("alert", "Se creó un nuevo registro de Ensayo Clínico");
+
+                // Dirijo al usuario a otra página
+                navigationManager.NavigateTo("/ensayosclinicos");
+
+            }
+        }
+        catch (Exception ex)
+        {
+
+            //Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"ERROR: " + ex.Message);
+        }
+    }
+
+    private Tratamiento GetTratamiento(int id)
+    {
+        try
+        {
+            int i = tratamientos.IndexOf(tratamientos.Find(x => x.IdTratamiento == id));
+            return tratamientos[i];
+        }
+        catch (Exception ex)
+        {
+
+            //Mensaje al usuario
+            js.InvokeVoidAsync("alert", $"ERROR: " + ex.Message);
+            return null;
+        }
+    }
+}

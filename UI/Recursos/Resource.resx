@@ -1,0 +1,244 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="accesscontrol.hello" xml:space="preserve">
+    <value>Hello</value>
+    <comment>AccessControl.razor</comment>
+  </data>
+  <data name="accesscontrol.login" xml:space="preserve">
+    <value>Log in</value>
+    <comment>AccessControl.razor</comment>
+  </data>
+  <data name="accesscontrol.logout" xml:space="preserve">
+    <value>Log out</value>
+    <comment>AccessControl.razor</comment>
+  </data>
+  <data name="app.authorizing" xml:space="preserve">
+    <value>Determining the session status, please wait...</value>
+    <comment>App.razor</comment>
+  </data>
+  <data name="app.notauthorized.header" xml:space="preserve">
+    <value>Welcome to GENOTEC, solution to manage Trials</value>
+    <comment>App.razor</comment>
+  </data>
+  <data name="app.notauthorized.p" xml:space="preserve">
+    <value>Please, login to access to the features of the solution.</value>
+    <comment>App.razor</comment>
+  </data>
+  <data name="app.notfound" xml:space="preserve">
+    <value>Sorry, there is nothing in this section.</value>
+    <comment>App.razor</comment>
+  </data>
+  <data name="bitacora.titulo" xml:space="preserve">
+    <value>System Logger</value>
+    <comment>Leer_Bitacora.razor</comment>
+  </data>
+  <data name="cardio.titulo" xml:space="preserve">
+    <value>Cardio records</value>
+    <comment>Leer_Cardio.razor</comment>
+  </data>
+  <data name="ensayo.crear.titulo" xml:space="preserve">
+    <value>Create Clinical Trial</value>
+    <comment>Crear_EnsayoClinico.razor</comment>
+  </data>
+  <data name="ensayo.editar.titulo" xml:space="preserve">
+    <value>Edit Clinical Trial</value>
+    <comment>Editar_EnsayoClinico.razor</comment>
+  </data>
+  <data name="ensayos.grilla" xml:space="preserve">
+    <value>List of Trials</value>
+    <comment>Leer_EnsayosClinicos.razor</comment>
+  </data>
+  <data name="ensayos.titulo" xml:space="preserve">
+    <value>Manage Trials</value>
+    <comment>Leer_Ensayos.razor</comment>
+  </data>
+  <data name="index.welcome" xml:space="preserve">
+    <value>Welcome</value>
+    <comment>Index.razor</comment>
+  </data>
+  <data name="main.about" xml:space="preserve">
+    <value>About</value>
+    <comment>MainLayout.Razor</comment>
+  </data>
+  <data name="navmenu.bitacora" xml:space="preserve">
+    <value>Logger</value>
+    <comment>NavMenu.razor</comment>
+  </data>
+  <data name="navmenu.ensayos" xml:space="preserve">
+    <value>Trial</value>
+    <comment>NavMenu.razor</comment>
+  </data>
+  <data name="navmenu.inicio" xml:space="preserve">
+    <value>Home</value>
+    <comment>NavMenu.razor</comment>
+  </data>
+  <data name="navmenu.pacientes" xml:space="preserve">
+    <value>Patients</value>
+    <comment>NavMenu.razor</comment>
+  </data>
+  <data name="navmenu.reportes" xml:space="preserve">
+    <value>Reports</value>
+    <comment>NavMenu.razor</comment>
+  </data>
+  <data name="navmenu.tratamientos" xml:space="preserve">
+    <value>Treatments</value>
+    <comment>NavMenu.razor</comment>
+  </data>
+  <data name="oxigeno.titulo" xml:space="preserve">
+    <value>SPO2 records</value>
+    <comment>Leer_Oxigeno</comment>
+  </data>
+  <data name="pacientes.crear.titulo" xml:space="preserve">
+    <value>Create new patient</value>
+    <comment>Crear_Paciente.razor</comment>
+  </data>
+  <data name="pacientes.editar.titulo" xml:space="preserve">
+    <value>Edit patient</value>
+    <comment>Editar_Paciente.razor</comment>
+  </data>
+  <data name="pacientes.grilla" xml:space="preserve">
+    <value>Patients list</value>
+    <comment>Leer_Pacientes.razor</comment>
+  </data>
+  <data name="pacientes.titulo" xml:space="preserve">
+    <value>Manage patients</value>
+    <comment>Leer_Pacientes.razor</comment>
+  </data>
+  <data name="reportes.titulo" xml:space="preserve">
+    <value>Trial Report</value>
+    <comment>Reportes.razor</comment>
+  </data>
+  <data name="temperatura.titulo" xml:space="preserve">
+    <value>Temperature records</value>
+    <comment>Leer_Temperatura</comment>
+  </data>
+  <data name="tratamiento.crear.titulo" xml:space="preserve">
+    <value>Create Treatment</value>
+    <comment>Crear_Tratamiento.razor</comment>
+  </data>
+  <data name="tratamientos.grilla" xml:space="preserve">
+    <value>Treatment list</value>
+    <comment>Leer_Tratamientos.razor</comment>
+  </data>
+  <data name="tratamientos.titulo" xml:space="preserve">
+    <value>Manage Treatments</value>
+    <comment>Leer_Tratamientos.razor</comment>
+  </data>
+</root>

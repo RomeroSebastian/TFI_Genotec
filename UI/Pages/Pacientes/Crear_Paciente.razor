@@ -1,0 +1,98 @@
+﻿@page "/pacientes/crear"
+@inject IJSRuntime js
+@inject IRepositorio repositorio
+@inject NavigationManager navigationManager
+@inject IStringLocalizer<Resource> localizer
+@attribute [Authorize(Policy = "User")]
+
+<h3>@localizer["pacientes.crear.titulo"]</h3>
+
+<EditForm Model="paciente" OnSubmit="Crear">
+    <div class="form-group">
+        <label>@localizer["Name"]</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@paciente.Nombre" />
+        </div>
+        <label>@localizer["Surname"]</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@paciente.Apellido" />
+        </div>
+        <label>@localizer["National ID"]</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@paciente.Documento" />
+        </div>
+        <label>@localizer["Address"]</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@paciente.Domicilio" />
+        </div>
+        <label>@localizer["Phone"]</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@paciente.Telefono" />
+        </div>
+        <label>@localizer["Email"]</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@paciente.Email" />
+        </div>
+        <label>@localizer["Gender"]</label>
+        <div>
+            <InputSelect class="form-control" @bind-Value="@_genero">
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
+                <option value="Otro">Otro</option>
+            </InputSelect>
+        </div>
+        <label>@localizer["Dato of birth"]</label>
+        <div>
+            <InputDate class="form-control" @bind-Value="@paciente.FechaNacimiento" />
+        </div>
+    </div>
+
+    <button class="btn btn-success" type="submit">@localizer["Create"]</button>
+    <a class="btn btn-danger" href="pacientes">@localizer["Cancel"]</a>
+</EditForm>
+
+@code {
+
+    private Paciente paciente = new Paciente();
+    private string _genero = "Otro";
+
+    protected async override Task OnInitializedAsync()
+    {
+
+    }
+
+    private async Task Crear()
+    {
+        try
+        {
+            // Género seleccionado
+            paciente.Genero = _genero;
+
+            // API ensayo clinico
+            var httpResponse = await repositorio.Post("/api/Paciente", paciente);
+
+            // Capturo respuesta de error del mensaje http
+            if (httpResponse.Error)
+            {
+                var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+                // Mensaje al usuario
+                await js.InvokeVoidAsync("alert", $"ERROR: " + body);
+            }
+            else
+            {
+                // Mensaje al usuario
+                await js.InvokeVoidAsync("alert", "Se creó un nuevo registro de Paciente");
+
+                // Dirijo al usuario a otra página
+                navigationManager.NavigateTo("/pacientes");
+
+            }
+        }
+        catch (Exception ex)
+        {
+
+            //Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"ERROR: " + ex.Message);
+        }
+    }
+}

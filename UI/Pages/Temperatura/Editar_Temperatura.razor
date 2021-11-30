@@ -1,0 +1,84 @@
+﻿@page "/pacientes/temperatura/editar/{IdTemperatura:int}"
+@inject IJSRuntime js
+@inject IRepositorio repositorio
+@inject NavigationManager navigationManager
+@inject IStringLocalizer<Resource> localizer
+@attribute [Authorize(Policy = "User")]
+
+<h3>Editar registro de Temperatura del paciente: @paciente.Nombre @paciente.Apellido</h3>
+
+@if (temperatura == null)
+{
+    <text>Cargando...</text>
+}
+else
+{
+    <EditForm Model="temperatura" OnValidSubmit="Editar">
+        <DataAnnotationsValidator />
+        <div class="form-group">
+            <label>@localizer["Value"]</label>
+            <div>
+                <InputNumber class="form-control" @bind-Value="@temperatura.Valor" />
+            </div>
+            <label>@localizer["Unit"]</label>
+            <div>
+                <InputText class="form-control" @bind-Value="@temperatura.Unidad" />
+            </div>
+            <label>@localizer["Date"]</label>
+            <div>
+                <InputDate class="form-control" @bind-Value="@temperatura.Fecha" />
+            </div>
+        </div>
+
+        <button class="btn btn-success" type="submit">Guardar Cambios</button>
+        <a class="btn btn-danger" href="pacientes/temperatura/@temperatura.IdPaciente">@localizer["Cancel"]</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int IdTemperatura { get; set; }
+    private Temperatura temperatura = new Temperatura();
+    private Paciente paciente = new Paciente();
+
+    protected async override Task OnInitializedAsync()
+    {
+        var httpResponse = await repositorio.Get<Temperatura>($"/api/Temperatura/{IdTemperatura}");
+        if (httpResponse.Error)
+        {
+            if (httpResponse.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("pacientes");
+            }
+            else
+            {
+                var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+                // Mensaje al usuario
+                await js.InvokeVoidAsync("alert", $"ERROR: {body}");
+            }
+        }
+        else
+        {
+            // Objeto oxígeno
+            temperatura = httpResponse.Response;
+            // Objeto paciente
+            paciente = temperatura.Paciente;
+        }
+    }
+
+    private async Task Editar()
+    {
+        var httpResponse = await repositorio.Put<Temperatura>("/api/Temperatura", temperatura);
+        if (httpResponse.Error)
+        {
+            var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+            // Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"ERROR: {body}");
+        }
+        else
+        {
+            // Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"Editado correctamente");
+            navigationManager.NavigateTo($"pacientes/Temperatura/{temperatura.IdPaciente}");
+        }
+    }
+}

@@ -1,0 +1,167 @@
+﻿@page "/ensayosclinicos/detalle/{IdEnsayoClinico:int}"
+@inject IJSRuntime js
+@inject IRepositorio repositorio
+@inject NavigationManager navigationManager
+@inject IStringLocalizer<Resource> localizer
+@attribute [Authorize(Policy = "User")]
+
+@{
+    var Tool = (new List<string>() { "Search", "ExcelExport" });
+}
+
+<h3>Pacientes dentro del ensayo SISA: @ensayoClinico.CodigoSISA </h3>
+
+<div>
+    <div class="form-group">
+        <a class="btn btn-outline-primary" href="pacientes/cardio/@pacienteSeleccionado.IdPaciente">Cardio</a>
+        <a class="btn btn-outline-primary" href="pacientes/oxigeno/@pacienteSeleccionado.IdPaciente">SPO2</a>
+        <a class="btn btn-outline-primary" href="pacientes/temperatura/@pacienteSeleccionado.IdPaciente">@localizer["Temperature"]</a>
+        <a class="btn btn-link" href="ensayosclinicos">@localizer["Back"]</a>
+    </div>
+
+    @if (pacientes == null)
+    {
+        <img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" />
+        <text>Cargando...</text>
+    }
+    else if (pacientes.Count == 0)
+    {
+        <text>No hay registros para mostrar</text>
+    }
+    else
+    {
+        <SfGrid ID="Grid" @ref="@DefaultGrid" DataSource="pacientes" AllowSelection="true" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar=@Tool AllowExcelExport="true">
+            <GridPageSettings PageSize="10"></GridPageSettings>
+            <GridSelectionSettings Type="SelectionType.Single"></GridSelectionSettings>
+            <GridEvents OnToolbarClick="ToolbarClickHandler" RowSelected="GetSelectedRecords" TValue="Paciente"></GridEvents>
+            <GridColumns>
+                <GridColumn Field="@nameof(Paciente.Nombre)"
+                            HeaderText=@localizer["Name"]
+                            TextAlign="TextAlign.Left"
+                            Width="90">
+                </GridColumn>
+                <GridColumn Field="@nameof(Paciente.Apellido)"
+                            HeaderText=@localizer["Surname"]
+                            TextAlign="TextAlign.Left"
+                            Width="90">
+                </GridColumn>
+                <GridColumn Field="@nameof(Paciente.Documento)"
+                            HeaderText=@localizer["National ID"]
+                            TextAlign="TextAlign.Right"
+                            Width="80">
+                </GridColumn>
+                <GridColumn Field="@nameof(Paciente.Domicilio)"
+                            HeaderText=@localizer["Address"]
+                            TextAlign="TextAlign.Left"
+                            Width="120">
+                </GridColumn>
+                <GridColumn Field="@nameof(Paciente.Telefono)"
+                            HeaderText=@localizer["Phone"]
+                            TextAlign="TextAlign.Left"
+                            Width="80">
+                </GridColumn>
+                <GridColumn Field="@nameof(Paciente.Email)"
+                            HeaderText=@localizer["Email"]
+                            TextAlign="TextAlign.Left"
+                            Width="140">
+                </GridColumn>
+                <GridColumn Field="@nameof(Paciente.Genero)"
+                            HeaderText=@localizer["Gender"]
+                            TextAlign="TextAlign.Left"
+                            Width="80">
+                </GridColumn>
+                <GridColumn Field="@nameof(Paciente.FechaNacimiento)"
+                            HeaderText=@localizer["Date of birth"]
+                            TextAlign="TextAlign.Right"
+                            Format="dd/MM/yyyy"
+                            Type="ColumnType.Date"
+                            Width="110">
+                </GridColumn>
+            </GridColumns>
+        </SfGrid>
+    }
+
+</div>
+
+@code {
+    [Parameter] public int IdEnsayoClinico { get; set; }
+    private List<Paciente> pacientes = new List<Paciente>();
+    private List<Paciente> pacientesSeleccionados;
+    private Paciente pacienteSeleccionado = new Paciente();
+    private EnsayoClinico ensayoClinico = new EnsayoClinico();
+    SfGrid<Paciente> DefaultGrid;
+    public List<double> SelectedRowIndexes { get; set; }
+    public double[] TotalValue { get; set; }
+    public string SelectedValue;
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        var httpResponse = await repositorio.Get<EnsayoClinico>($"/api/EnsayoClinico/{IdEnsayoClinico}");
+        if (httpResponse.Error)
+        {
+            if (httpResponse.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("ensayosclinicos");
+            }
+            else
+            {
+                var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+                // Mensaje al usuario
+                await js.InvokeVoidAsync("alert", $"ERROR: {body}");
+            }
+        }
+        else
+        {
+            // Ensayo Clínico
+            ensayoClinico = httpResponse.Response;
+
+            // Lista de pacientes relacionados al Ensayo Clínico
+            foreach (var item in ensayoClinico.PacienteEnsayo)
+            {
+                pacientes.Add(item.paciente);
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// Selección de registros en la grilla
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    public async Task GetSelectedRecords(RowSelectEventArgs<Paciente> args)
+    {
+        SelectedRowIndexes = await this.DefaultGrid.GetSelectedRowIndexes();
+        pacientesSeleccionados = await this.DefaultGrid.GetSelectedRecordsAsync();
+        TotalValue = SelectedRowIndexes.ToArray();
+        SelectedValue = "";
+
+        foreach (var data in TotalValue)
+        {
+            SelectedValue = data.ToString();
+        }
+
+        foreach (var item in pacientesSeleccionados)
+        {
+            pacienteSeleccionado = item;
+        }
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Exportación a Excel
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        if (args.Item.Id == "Grid_excelexport") //Id is combination of Grid's ID and itemname
+        {
+            ExcelExportProperties ExportProperties = new ExcelExportProperties();
+            ExportProperties.ExportType = Syncfusion.Blazor.Grids.ExportType.AllPages;
+            await this.DefaultGrid.ExcelExport(ExportProperties);
+        }
+    }
+
+}

@@ -1,0 +1,152 @@
+﻿@page "/counter"
+@inject IJSRuntime js
+@inject AuthenticationStateProvider AuthState
+@using Services.Facade
+@using Services.Exceptions.Domain
+@attribute [Authorize(Policy = "Admin")]
+
+<h1>Pruebas</h1>
+
+<p>Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<br />
+<br />
+<button class="btn btn-primary" @onclick="AddLogDB">Add Log DB</button>
+
+<button class="btn btn-primary" @onclick="AddLogDALJSON">Add Log DAL JSON</button>
+
+<button class="btn btn-primary" @onclick="ReadLogDALJSON">Read Log DAL JSON</button>
+<br />
+<br />
+<button class="btn btn-primary" @onclick="TestFirebase">Test Firebase</button>
+
+
+@code {
+    private int currentCount = 0;
+    private string _Username = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthState.GetAuthenticationStateAsync();
+
+        _Username = state.User.Claims
+                    .Where(c => c.Type.Equals("name"))
+                    .Select(c => c.Value)
+                    .FirstOrDefault() ?? string.Empty;
+
+        await base.OnInitializedAsync();
+    }
+
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    private void AddLogDB()
+    {
+        try
+        {
+            Log objLog = new Log
+            {
+                Date = DateTime.Now,
+                LogType = Log.logType.System,
+                Severity = Log.severityType.Info,
+                Message = "Clic en botón Add Log DB",
+                UserName = _Username
+            };
+
+            LoggerBLL.Current.Write(objLog);
+
+            //Mensaje al usuario
+            js.InvokeVoidAsync("alert", $"Registro correcto en tabla LOG");
+
+        }
+        catch (Exception ex)
+        {
+
+            //Mensaje al usuario
+            js.InvokeVoidAsync("alert", $"ERROR: " + ex.Message);
+        }
+
+    }
+
+    private void AddLogDALJSON()
+    {
+        try
+        {
+            Log_DAL objLog = new Log_DAL
+            {
+                Date = DateTime.Now,
+                LogType = Log.logType.System,
+                Severity = Log.severityType.Info,
+                Message = "Clic en botón Add Log DAL JSON",
+                UserName = _Username
+            };
+
+            LoggerBLL.Current.Write(objLog);
+
+            //Mensaje al usuario
+            js.InvokeVoidAsync("alert", $"Registro correcto en archivo .json");
+
+        }
+        catch (Exception ex)
+        {
+
+            //Mensaje al usuario
+            js.InvokeVoidAsync("alert", $"ERROR: " + ex.Message);
+        }
+
+    }
+
+    private void ReadLogDALJSON()
+    {
+        try
+        {
+
+            LoggerBLL.Current.GetAllSerializabledDAL();
+
+        }
+        catch (Exception ex)
+        {
+
+            //Mensaje al usuario
+            js.InvokeVoidAsync("alert", $"ERROR: " + ex.Message);
+        }
+
+    }
+
+    private void TestFirebase()
+    {
+        try
+        {
+            Paciente paciente = new Paciente();
+            Domain.Oxigeno oxigeno = new Domain.Oxigeno();
+
+            paciente.IdPaciente = 1;
+            paciente.Nombre = "Geronimo";
+            paciente.Apellido = "Pardo";
+            paciente.Documento = "22555999";
+            paciente.Domicilio = "Conesa 1900, CABA";
+            paciente.Telefono = "1122557788";
+            paciente.Email = "geronimo@test.com";
+            paciente.FechaNacimiento = new DateTime(1980, 10, 5);
+
+            oxigeno.Valor = Convert.ToDecimal("97");
+            oxigeno.Unidad = "SPO2";
+            oxigeno.Fecha = DateTime.Now;
+            oxigeno.IdPaciente = paciente.IdPaciente;
+            oxigeno.Paciente = paciente;
+
+            // Crear registro en FIREBASE
+            OxigenoBLL.Current.AddFirebase(oxigeno);
+        }
+        catch (Exception ex)
+        {
+
+            //Mensaje al usuario
+            js.InvokeVoidAsync("alert", $"ERROR: " + ex.Message);
+        }
+    }
+}

@@ -1,0 +1,101 @@
+﻿@page "/pacientes/temperatura/crear/{IdPaciente:int}"
+@inject IJSRuntime js
+@inject IRepositorio repositorio
+@inject NavigationManager navigationManager
+@inject IStringLocalizer<Resource> localizer
+@attribute [Authorize(Policy = "User")]
+
+<h3>Crear Registro de Temperatura para el paciente: @paciente.Nombre @paciente.Apellido</h3>
+
+@if (temperatura == null)
+{
+    <text>Cargando...</text>
+}
+else
+{
+    <EditForm Model="temperatura" OnValidSubmit="Crear">
+        <div class="form-group">
+            <label>@localizer["Value"]</label>
+            <div>
+                <InputNumber class="form-control" @bind-Value="@temperatura.Valor" />
+            </div>
+            <label>@localizer["Unit"]</label>
+            <div>
+                <InputText class="form-control" @bind-Value="@temperatura.Unidad" />
+            </div>
+            <label>@localizer["Date"]</label>
+            <div>
+                <SfDateTimePicker TValue="DateTime?" @bind-Value="@dateValue"></SfDateTimePicker>
+            </div>
+        </div>
+
+        <button class="btn btn-success" type="submit">@localizer["Create"]</button>
+        <a class="btn btn-danger" href="pacientes/oxigeno/@temperatura.IdPaciente">@localizer["Cancel"]</a>
+    </EditForm>
+}
+
+@code {
+
+    [Parameter] public int IdPaciente { get; set; }
+    private Temperatura temperatura = new Temperatura();
+    private Paciente paciente = new Paciente();
+    private DateTime? dateValue { get; set; } = DateTime.Now;
+
+    protected async override Task OnInitializedAsync()
+    {
+        // API Paciente - GET con datos del paciente
+        var httpResponse = await repositorio.Get<Paciente>($"/api/Paciente/{IdPaciente}");
+
+        // Capturo respuesta de error del mensaje http
+        if (httpResponse.Error)
+        {
+            var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+            // Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"ERROR: " + body);
+
+            // Dirijo al usuario a otra página
+            navigationManager.NavigateTo($"/pacientes/temperatura/{IdPaciente}");
+        }
+        else
+        {
+            // Cargo el objeto Paciente dentro del Objeto Oxígeno
+            paciente = httpResponse.Response;
+            temperatura.Paciente = paciente;
+            // Agrego el IdPaciente al objeto Oxígeno
+            temperatura.IdPaciente = temperatura.Paciente.IdPaciente;
+            // Seteo Unidad por defecto
+            temperatura.Unidad = "°C";
+        }
+
+    }
+
+    /// <summary>
+    /// Crear nuevo registro de oxígeno para el paciente
+    /// </summary>
+    /// <returns></returns>
+    private async Task Crear()
+    {
+        // Fecha y Hora seleccionada
+        temperatura.Fecha = Convert.ToDateTime(dateValue);
+
+        // API de Oxigeno - POST
+        var httpResponse = await repositorio.Post<Temperatura>($"/api/Temperatura", temperatura);
+
+        // Capturo respuesta de error del mensaje http
+        if (httpResponse.Error)
+        {
+            var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+            // Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"ERROR: " + body);
+        }
+        else
+        {
+            // Mensaje al usuario
+            await js.InvokeVoidAsync("alert", "Se creó un nuevo registro de Temperatura");
+
+            // Dirijo al usuario a otra página
+            navigationManager.NavigateTo($"/pacientes/temperatura/{IdPaciente}");
+        }
+    }
+}
+

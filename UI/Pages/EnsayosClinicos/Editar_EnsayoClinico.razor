@@ -1,0 +1,113 @@
+﻿@page "/ensayosclinicos/editar/{IdEnsayoClinico:int}"
+@inject IJSRuntime js
+@inject IRepositorio repositorio
+@inject NavigationManager navigationManager
+@inject IStringLocalizer<Resource> localizer
+@attribute [Authorize(Policy = "User")]
+
+<h3>@localizer["ensayo.editar.titulo"]</h3>
+
+@if (ensayoClinico == null)
+{
+    <text>Cargando...</text>
+}
+else
+{
+    <EditForm Model="ensayoClinico" OnValidSubmit="Editar">
+        <DataAnnotationsValidator />
+        <div class="form-group">
+            <label>Codigo SISA: </label>
+            <div>
+                <InputText class="form-control" @bind-Value="@ensayoClinico.CodigoSISA" />
+                <ValidationMessage For="@(() => ensayoClinico.CodigoSISA)" />
+            </div>
+            <label>Título: </label>
+            <div>
+                <InputText class="form-control" @bind-Value="@ensayoClinico.Titulo" />
+            </div>
+            <label>Condición Salud: </label>
+            <div>
+                <InputText class="form-control" @bind-Value="@ensayoClinico.CondicionSalud" />
+            </div>
+            <label>Categoría:</label>
+            <div>
+                <InputText class="form-control" @bind-Value="@ensayoClinico.Categoria" />
+            </div>
+            <label>Tipo: </label>
+            <div>
+                <InputText class="form-control" @bind-Value="@ensayoClinico.Tipo" />
+            </div>
+            <label>Fase:</label>
+            <div>
+                <InputText class="form-control" @bind-Value="@ensayoClinico.Fase" />
+            </div>
+            <label>Fecha Registro: </label>
+            <div>
+                <InputDate class="form-control" @bind-Value="@ensayoClinico.FechaRegistro" />
+            </div>
+            <label>Fecha Incio: </label>
+            <div>
+                <InputDate class="form-control" @bind-Value="@ensayoClinico.FechaInicio" />
+            </div>
+            <label>Fecha Fin: </label>
+            <div>
+                <InputDate class="form-control" @bind-Value="@ensayoClinico.FechaFin" />
+            </div>
+            <label>Estado: </label>
+            <div>
+                <InputText class="form-control" @bind-Value="@ensayoClinico.Estado" />
+            </div>
+        </div>
+
+        <button class="btn btn-success" type="submit">Guardar Cambios</button>
+        <a class="btn btn-danger" href="ensayosclinicos">@localizer["Cancel"]</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int IdEnsayoClinico { get; set; }
+    private EnsayoClinico ensayoClinico = new EnsayoClinico();
+
+    protected async override Task OnInitializedAsync()
+    {
+        var httpResponse = await repositorio.Get<EnsayoClinico>($"/api/EnsayoClinico/{IdEnsayoClinico}");
+        if (httpResponse.Error)
+        {
+            if (httpResponse.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("ensayosclinicos");
+            }
+            else
+            {
+                var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+                // Mensaje al usuario
+                await js.InvokeVoidAsync("alert", $"ERROR: {body}");
+            }
+        }
+        else
+        {
+            ensayoClinico = httpResponse.Response;
+        }
+    }
+
+    private async Task Editar()
+    {
+        //await repositorio.Put<EnsayoClinico>("/api/EnsayoClinico", ensayoClinico);
+        //navigationManager.NavigateTo("ensayosclinicos");
+
+        var httpResponse = await repositorio.Put<EnsayoClinico>("/api/EnsayoClinico", ensayoClinico);
+        if (httpResponse.Error)
+        {
+            var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+            // Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"ERROR: {body}");
+        }
+        else
+        {
+            // Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"Editado correctamente");
+            navigationManager.NavigateTo("ensayosclinicos");
+        }
+    }
+
+}

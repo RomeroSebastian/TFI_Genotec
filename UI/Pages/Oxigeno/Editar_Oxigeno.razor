@@ -1,0 +1,84 @@
+﻿@page "/pacientes/oxigeno/editar/{IdOxigeno:int}"
+@inject IJSRuntime js
+@inject IRepositorio repositorio
+@inject NavigationManager navigationManager
+@inject IStringLocalizer<Resource> localizer
+@attribute [Authorize(Policy = "User")]
+
+<h3>Editar registro de Saturación de Oxigeno del paciente: @paciente.Nombre @paciente.Apellido</h3>
+
+@if (oxigeno == null)
+{
+    <text>Cargando...</text>
+}
+else
+{
+    <EditForm Model="oxigeno" OnValidSubmit="Editar">
+        <DataAnnotationsValidator />
+        <div class="form-group">
+            <label>@localizer["Value"]</label>
+            <div>
+                <InputNumber class="form-control" @bind-Value="@oxigeno.Valor" />
+            </div>
+            <label>@localizer["Unit"]</label>
+            <div>
+                <InputText class="form-control" @bind-Value="@oxigeno.Unidad" />
+            </div>
+            <label>@localizer["Date"]</label>
+            <div>
+                <InputDate class="form-control" @bind-Value="@oxigeno.Fecha" />
+            </div>
+        </div>
+
+        <button class="btn btn-success" type="submit">Guardar Cambios</button>
+        <a class="btn btn-danger" href="pacientes/oxigeno/@oxigeno.IdPaciente">@localizer["Cancel"]</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int IdOxigeno { get; set; }
+    private Oxigeno oxigeno = new Oxigeno();
+    private Paciente paciente = new Paciente();
+
+    protected async override Task OnInitializedAsync()
+    {
+        var httpResponse = await repositorio.Get<Oxigeno>($"/api/Oxigeno/{IdOxigeno}");
+        if (httpResponse.Error)
+        {
+            if (httpResponse.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("pacientes");
+            }
+            else
+            {
+                var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+                // Mensaje al usuario
+                await js.InvokeVoidAsync("alert", $"ERROR: {body}");
+            }
+        }
+        else
+        {
+            // Objeto oxígeno
+            oxigeno = httpResponse.Response;
+            // Objeto paciente
+            paciente = oxigeno.Paciente;
+        }
+    }
+
+    private async Task Editar()
+    {
+        var httpResponse = await repositorio.Put<Oxigeno>("/api/Oxigeno", oxigeno);
+        if (httpResponse.Error)
+        {
+            var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+            // Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"ERROR: {body}");
+        }
+        else
+        {
+            // Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"Editado correctamente");
+            navigationManager.NavigateTo($"pacientes/oxigeno/{oxigeno.IdPaciente}");
+        }
+    }
+}

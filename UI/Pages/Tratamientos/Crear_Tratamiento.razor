@@ -1,0 +1,70 @@
+﻿@page "/tratamientos/crear"
+@inject IJSRuntime js
+@inject IRepositorio repositorio
+@inject NavigationManager navigationManager
+@inject IStringLocalizer<Resource> localizer
+@*@attribute [Authorize(Policy = "User")]*@
+
+<h3>@localizer["tratamiento.crear.titulo"]</h3>
+
+<EditForm Model="tratamiento" OnSubmit="Crear">
+    <div class="form-group">
+        <label>@localizer["Name"]</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@tratamiento.Nombre" />
+        </div>
+        <label>@localizer["Description"]</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@tratamiento.Descripcion" />
+        </div>
+        <label>@localizer["Indications"]</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@tratamiento.Indicaciones" />
+        </div>
+        <label>@localizer["Date"]</label>
+        <div>
+            <InputDate class="form-control" @bind-Value="@tratamiento.Fecha" />
+        </div>
+    </div>
+
+    <button class="btn btn-success" type="submit">@localizer["Create"]</button>
+    <a class="btn btn-danger" href="tratamientos">@localizer["Cancel"]</a>
+</EditForm>
+
+
+@code {
+
+    private Tratamiento tratamiento = new Tratamiento();
+
+    private async Task Crear()
+    {
+
+        try
+        {
+            var httpResponse = await repositorio.Post("https://localhost:44355/api/Tratamiento", tratamiento);
+
+            // Capturo respuesta de error del mensaje http
+            if (httpResponse.Error)
+            {
+                var body = await httpResponse.HttpResponseMessage.Content.ReadAsStringAsync();
+                // Mensaje al usuario
+                await js.InvokeVoidAsync("alert", $"ERROR: " + body);
+            }
+            else
+            {
+                // Mensaje al usuario
+                await js.InvokeVoidAsync("alert", "Se creó un nuevo registro de Tratamiento");
+
+                // Dirijo al usuario a otra página
+                navigationManager.NavigateTo("/tratamientos");
+
+            }
+        }
+        catch (Exception ex)
+        {
+
+            //Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"ERROR: " + ex.Message);
+        }
+    }
+}

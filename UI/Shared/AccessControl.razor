@@ -1,0 +1,11 @@
+﻿@inject IStringLocalizer<Resource> localizer
+
+<AuthorizeView>
+    <Authorized>
+        @localizer["accesscontrol.hello"], @context.User.Identity.Name!
+        <a href="logout">@localizer["accesscontrol.logout"]</a>
+    </Authorized>
+    <NotAuthorized>
+        <a href="login?redirectUri=/">@localizer["accesscontrol.login"]</a>
+    </NotAuthorized>
+</AuthorizeView>

@@ -1,0 +1,131 @@
+﻿@page "/bitacora"
+@inject IJSRuntime js
+@inject IRepositorio repositorio
+@inject IStringLocalizer<Resource> localizer
+@attribute [Authorize(Policy = "Admin")]
+
+@{
+    var Tool = (new List<string>() { "Search", "ExcelExport" });
+}
+
+<h3>@localizer["bitacora.titulo"]</h3>
+
+<div class="form-group">
+    <a class="btn btn-link" href="">@localizer["Back"]</a>
+</div>
+
+@if (regLogs == null)
+{
+    <text>Cargando...</text>
+}
+else if (regLogs.Count == 0)
+{
+    <text>No hay registros para mostrar</text>
+}
+else
+{
+    <SfGrid ID="Grid" @ref="@DefaultGrid" DataSource="regLogs" AllowSelection="true" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar=@Tool AllowExcelExport="true">
+        <GridPageSettings PageSize="10"></GridPageSettings>
+        <GridSelectionSettings Type="SelectionType.Single"></GridSelectionSettings>
+        <GridEvents OnToolbarClick="ToolbarClickHandler" RowSelected="GetSelectedRecords" TValue="Log"></GridEvents>
+        <GridColumns>
+            <GridColumn Field="@nameof(Log.Date)"
+                        HeaderText=@localizer["Date"]
+                        TextAlign="TextAlign.Left"
+                        Format="dd/MM/yyyy HH:mm:ss"
+                        Type="ColumnType.DateTime"
+                        Width="90">
+            </GridColumn>
+            <GridColumn Field="@nameof(Log.UserName)"
+                        HeaderText=@localizer["User"]
+                        TextAlign="TextAlign.Left"
+                        Width="90">
+            </GridColumn>
+            <GridColumn Field="@nameof(Log.Severity)"
+                        HeaderText=@localizer["Severity"]
+                        TextAlign="TextAlign.Left"
+                        Width="80">
+            </GridColumn>
+            <GridColumn Field="@nameof(Log.LogType)"
+                        HeaderText=@localizer["Type"]
+                        TextAlign="TextAlign.Left"
+                        Width="80">
+            </GridColumn>
+            <GridColumn Field="@nameof(Log.Message)"
+                        HeaderText=@localizer["Message"]
+                        TextAlign="TextAlign.Left"
+                        Width="180">
+            </GridColumn>
+        </GridColumns>
+    </SfGrid>
+}
+
+
+@code {
+    private Log log = new Log();
+    private List<Log> regLogs;
+    private List<Log> regLogsSeleccionados;
+    private Log regLogSeleccionado = new Log();
+    SfGrid<Log> DefaultGrid;
+    public List<double> SelectedRowIndexes { get; set; }
+    public double[] TotalValue { get; set; }
+    public string SelectedValue;
+    SfChart linechartObj = new SfChart();
+
+    protected async override Task OnInitializedAsync()
+    {
+        try
+        {
+            await Task.Delay(1000);
+
+            // Leo los registros de Log
+            regLogs = LoggerBLL.Current.GetAll();
+
+        }
+        catch (Exception ex)
+        {
+            //Mensaje al usuario
+            await js.InvokeVoidAsync("alert", $"ERROR: " + ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Selección de registros en la grilla
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    public async Task GetSelectedRecords(RowSelectEventArgs<Log> args)
+    {
+        SelectedRowIndexes = await this.DefaultGrid.GetSelectedRowIndexes();
+        regLogsSeleccionados = await this.DefaultGrid.GetSelectedRecordsAsync();
+        TotalValue = SelectedRowIndexes.ToArray();
+        SelectedValue = "";
+
+        foreach (var data in TotalValue)
+        {
+            SelectedValue = data.ToString();
+        }
+
+        foreach (var item in regLogsSeleccionados)
+        {
+            regLogSeleccionado = item;
+        }
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Exportación a Excel
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        if (args.Item.Id == "Grid_excelexport") //Id is combination of Grid's ID and itemname
+        {
+            ExcelExportProperties ExportProperties = new ExcelExportProperties();
+            ExportProperties.ExportType = Syncfusion.Blazor.Grids.ExportType.AllPages;
+            await this.DefaultGrid.ExcelExport(ExportProperties);
+        }
+    }
+
+}
